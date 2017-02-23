@@ -11,12 +11,7 @@ AppBundle\Entity\Card:
     fields:
         number:
             type: integer
-        identity:
-            type: string
-            length: 255
         sign:
             type: string
             length: 255
-        color:
-            type: boolean
     lifecycleCallbacks: {  }
