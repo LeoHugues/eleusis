@@ -1,0 +1,22 @@
+AppBundle\Entity\Card:
+    type: entity
+    table: null
+    repositoryClass: AppBundle\Repository\CardRepository
+    id:
+        id:
+            type: integer
+            id: true
+            generator:
+                strategy: AUTO
+    fields:
+        number:
+            type: integer
+        identity:
+            type: string
+            length: 255
+        sign:
+            type: string
+            length: 255
+        color:
+            type: boolean
+    lifecycleCallbacks: {  }
