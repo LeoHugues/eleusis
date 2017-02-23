@@ -20,17 +20,7 @@ class Card
     /**
      * @var string
      */
-    private $identity;
-
-    /**
-     * @var string
-     */
     private $sign;
-
-    /**
-     * @var bool
-     */
-    private $color;
 
 
     /**
@@ -65,30 +55,6 @@ class Card
     public function getNumber()
     {
         return $this->number;
-    }
-
-    /**
-     * Set identity
-     *
-     * @param string $identity
-     *
-     * @return Card
-     */
-    public function setIdentity($identity)
-    {
-        $this->identity = $identity;
-
-        return $this;
-    }
-
-    /**
-     * Get identity
-     *
-     * @return string
-     */
-    public function getIdentity()
-    {
-        return $this->identity;
     }
 
     /**
