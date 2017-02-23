@@ -47,4 +47,7 @@
 /web/css/
 /web/js/
 
+#.idea
+/eleusis/.idea
+
 # End of https://www.gitignore.io/api/symfony
