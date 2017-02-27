@@ -1,0 +1,4 @@
+apps:
+  type: rest
+  resource: "UserBundle:AppRest"
+  name_prefix: api_
