@@ -22,6 +22,12 @@ class Card
      */
     private $sign;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="eleusis\AppBundle\Entity\Deck", inversedBy="cards")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $deck;
+
 
     /**
      * Get id
@@ -79,6 +85,22 @@ class Card
     public function getSign()
     {
         return $this->sign;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDeck()
+    {
+        return $this->deck;
+    }
+
+    /**
+     * @param mixed $deck
+     */
+    public function setDeck($deck)
+    {
+        $this->deck = $deck;
     }
 }
 
