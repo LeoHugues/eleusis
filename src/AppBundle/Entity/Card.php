@@ -80,29 +80,5 @@ class Card
     {
         return $this->sign;
     }
-
-    /**
-     * Set color
-     *
-     * @param boolean $color
-     *
-     * @return Card
-     */
-    public function setColor($color)
-    {
-        $this->color = $color;
-
-        return $this;
-    }
-
-    /**
-     * Get color
-     *
-     * @return bool
-     */
-    public function getColor()
-    {
-        return $this->color;
-    }
 }
 
