@@ -8,11 +8,8 @@ use Symfony\Component\HttpFoundation\Request;
 
 class AppRestController extends Controller
 {
-    public function initGameAction(){
-
-        if(!is_object($user)){
-            throw $this->createNotFoundException();
-        }
-        return $user;
+    public function getInitGameAction()
+    {
+        return 'hello world';
     }
 }

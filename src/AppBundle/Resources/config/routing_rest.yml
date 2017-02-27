@@ -1,4 +1,4 @@
-apps:
+init_game:
   type: rest
-  resource: "UserBundle:AppRest"
+  resource: "AppBundle:AppRest"
   name_prefix: api_
