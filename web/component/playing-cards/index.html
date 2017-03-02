@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+    <title>atomantic/JavaScript-Playing-Cards @ GitHub</title>
+
+    <link rel="stylesheet" type="text/css" media="all" href="playingCards.ui.css"/>
+    <style type="text/css">
+        body {
+          margin-top: 1.0em;
+          background-color: #fff;
+          font-family: "Helvetica,Arial,FreeSans";
+          color: #000000;
+        }
+        #container {
+          margin: 0 auto;
+          width: 860px;
+        }
+        h1 { font-size: 40px; color: #64052a; margin-bottom: 3px; }
+        h1 .small { font-size: 0.4em; }
+        h1 a { text-decoration: none }
+        h2 { font-size: 1.5em; color: #64052a; }
+        h3 { text-align: center; color: #64052a; }
+        a { color: #64052a; }
+        .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
+        .download { float: right; }
+            pre { background: #000; color: #fff; padding: 15px;}
+        hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+        .footer { text-align:center; padding-top:30px; font-style: italic; }
+        h2{
+            clear:both;
+        }
+        #error{
+            display:none;color:#f00;border:1px solid #f60;padding:5px;margin:5px;
+        }
+    </style>
+
+</head>
+
+<body>
+    <h2>Joueur 1 </h2>
+    <div id="cardDeck"></div>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script type="text/javascript" src="playingCards.js"></script>
+    <script type="text/javascript" src="playingCards.ui.js"></script>
+    <script type="text/javascript">
+        /*
+         * example throwing cards on the table
+         */
+        $(document).ready(function(){
+
+            var cardDeck = $("#cardDeck").playingCards(["3-H","3-S","K-D"]);
+            cardDeck.spread(); // show it
+
+        });
+        /*
+        // if we weren't using jquery to handle the document ready state, we would do this:
+        if (window.addEventListener) {
+            window.addEventListener("load",initPlayingCards,false);
+        } else if (window.attachEvent) {
+            window.attachEvent("onload",initPlayingCards);
+        } else {
+            window.onload = function() {initPlayingCards();}
+        }
+        function initPlayingCards() {
+            cardDeck = new playingCards();
+        }
+        */
+    </script>
+</body>
+</html>
+
