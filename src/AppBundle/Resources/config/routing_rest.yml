@@ -1,0 +1,4 @@
+init_game:
+  type: rest
+  resource: "AppBundle:AppRest"
+  name_prefix: api_
