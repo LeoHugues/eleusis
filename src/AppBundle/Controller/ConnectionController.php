@@ -8,16 +8,14 @@
 
 namespace AppBundle\Controller;
 
-use FOS\RestBundle\Controller\Annotations\Get;
-use Symfony\Component\BrowserKit\Request;
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use FOS\RestBundle\Controller\Annotations as Rest;
 
-class ConnectionController
+class ConnectionController extends Controller
 {
-    /**
-     * @Get("/connect/{player}")
-     */
-    public function connectAction(Request $request, $player)
+    public function getConnectAction($player, Request $request)
     {
         $filePlayers   = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/Players.json';
         $pathStateGame = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/StateGame.json';
@@ -89,12 +87,8 @@ class ConnectionController
     {
         $array = [
             "status"          => null,
-            "tableau"         => $this->get('connection_service')->getInitGameAction(),
-            "nbTenaillesJ1"   => 0,
-            "nbTenaillesJ2"   => 0,
-            "dernierCoupX"    => null,
-            "dernierCoupY"    => null,
-            "prolongation"    => false,
+            "deck"            => $this->get('manage_deck')->initialize(),
+            "dernierCoup"     => null,
             "finPartie"       => false,
             "detailFinPartie" => null,
             "numTour"         => 0,

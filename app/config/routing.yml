@@ -1,7 +1,3 @@
-app:
-    resource: "@AppBundle/Controller/AppRestController.php"
-    type:     annotation
-
 connection:
     type:     rest
-    resource: AppBundle\Controller\AppRestController
+    resource: AppBundle\Controller\ConnectionController
