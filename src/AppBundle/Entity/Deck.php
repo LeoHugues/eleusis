@@ -26,7 +26,6 @@ class Deck
     public function __construct()
     {
         $this->cards = new ArrayCollection();
-        // ...
     }
 
     /**
