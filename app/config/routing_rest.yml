@@ -1,3 +1,0 @@
-Rest_App:
-  type: rest
-  resource: "@AppBundle/Resources/config/routing_rest.yml"

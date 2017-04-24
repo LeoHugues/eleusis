@@ -7,3 +7,6 @@ services:
     manage_deck:
         class: AppBundle\Service\ManageDeck
         arguments: []
+
+    connection_service:
+        class: AppBundle\AppBundle\Controller\AppRestController

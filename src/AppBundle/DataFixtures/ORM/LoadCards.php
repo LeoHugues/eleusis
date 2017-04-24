@@ -30,7 +30,6 @@ class LoadCards implements FixtureInterface
                 $manager->persist($card);
 
                 $manager->flush();
-
             }
         }
     }

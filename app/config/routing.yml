@@ -1,8 +1,7 @@
 app:
-    resource: "@AppBundle/Controller/"
+    resource: "@AppBundle/Controller/AppRestController.php"
     type:     annotation
 
-rest:
-  type: rest
-  resource: "routing_rest.yml"
-  prefix: /api
+connection:
+    type:     rest
+    resource: AppBundle\Controller\AppRestController
