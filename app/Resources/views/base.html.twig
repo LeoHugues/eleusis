@@ -3,8 +3,9 @@
     <head>
         <meta charset="UTF-8" />
         <title>{% block title %}Welcome!{% endblock %}</title>
+        <link rel="stylesheet" href="{{ asset('component/css/bootstrap.min.css') }}" />
+        <link rel="stylesheet" href="{{ asset('bundles/AppBundle/css/style.css') }}" />
         {% block stylesheets %}
-            <link rel="stylesheet" href="{{ asset('component/css/bootstrap.min.css') }}" />
         {% endblock %}
         <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
     </head>

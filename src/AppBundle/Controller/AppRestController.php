@@ -11,6 +11,10 @@ use Symfony\Component\HttpFoundation\Request;
 
 class AppRestController extends Controller
 {
+    const NB_JOUEUR = 3;
+
+    public $godId = null;
+
     /**
      * @Get("/connect/{player}")
      */
@@ -31,13 +35,19 @@ class AppRestController extends Controller
                 'nomJoueur' => $player,
                 'numJoueur' => intval(1)
             ];
-            $players = array('idPlayer1' => $idPlayer, 'idPlayer2' => null, 'idPlayer3' => null, 'idPlayer4' => null, 'nbJoueur' => 1);
+            $players = array(
+                'idPlayer1' => $idPlayer,
+                'idPlayer2' => null,
+                'idPlayer3' => null,
+                'idPlayer4' => null,
+                'nbJoueur' => 1
+            );
             file_put_contents($filePlayers, json_encode($players));
             return new JsonResponse($formatted);
         } else {
             $players = file_get_contents($filePlayers);
             $players = json_decode($players, true);
-            if($players['nbJoueur'] < 3) {
+            if($players['nbJoueur'] < self::NB_JOUEUR) {
                 $idPlayer              = md5(uniqid(rand(), true));
                 $players['nbJoueur']++;
                 $formatted = [
@@ -47,6 +57,14 @@ class AppRestController extends Controller
                     'numJoueur' => intval($players['nbJoueur'])
                 ];
                 $players['idPlayer' . $players['nbJoueur']] = $idPlayer;
+
+                // Si le nombre de joueur est atteint on peut commencer la partie
+                if ($players['nbJoueur'] == self::NB_JOUEUR) {
+                    $stateGameContent = file_get_contents($pathStateGame);
+                    $stateGame = json_decode($stateGameContent, true);
+                    $stateGame['commencerPartie'] = true;
+                    file_put_contents($pathStateGame, json_encode($stateGame));
+                }
                 file_put_contents($filePlayers, json_encode($players));
                 return new JsonResponse($formatted);
             } else {
@@ -60,6 +78,41 @@ class AppRestController extends Controller
                 $response->setStatusCode(401);
                 return $response;
             }
+        }
+    }
+
+    /**
+     * @Get("/ready/{idJoueur}")
+     */
+    public function readyAction($idJoueur) {
+
+        $filePlayers = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/Players.json';
+        $filePlayersContent = file_get_contents($filePlayers, true);
+        $players = json_decode($filePlayersContent, true);
+
+        if ($this->godId == null) {
+            $this->godId = $players['idPlayer' . rand(1, self::NB_JOUEUR)];
+        }
+        
+        $i = 1;
+        $godIsDefine = false;
+        foreach ($players as $player) {
+            if ($idJoueur == $player) {
+                if ($idJoueur == $this->godId) {
+                    
+                    return new JsonResponse(array('numJoueur' => "god"));
+                } elseif ($godIsDefine) {
+                    
+                    return new JsonResponse(array('numJoueur' => "joueur" . $i-1));
+                } else {
+                    
+                    return new JsonResponse(array('numJoueur' => "joueur" . $i));
+                }
+            } elseif ($player == $this->godId) {
+                $godIsDefine = true;
+            }
+            
+            $i++;
         }
     }
 
@@ -216,6 +269,7 @@ class AppRestController extends Controller
         $fs->remove($pathStateGame);
         $fs->touch($fileTurn);
         $fs->touch($pathStateGame);
+        $this->godId = null;
     }
 
     private function jaiFinisDeJouer($idPlayer, $players) {
@@ -231,12 +285,14 @@ class AppRestController extends Controller
     private function startGame()
     {
         $array = [
-            "status"          => null,
-            "tableau"         => $this->getEmptyDeck(),
-            "finPartie"       => false,
-            "detailFinPartie" => null,
-            "code"            => 200
+            "commencerPartie" => false,                  // True si la partie peu commencer
+            "status"          => null,                   // True si c'est à moi sinon false
+            "partie"          => $this->getEmptyDeck(),  // Modelisation des cartes
+            "finPartie"       => false,                  // True si c'est terminé sinon false
+            "detailFinPartie" => null,                   // Explique pourquoi la partie est terminée
+            "code"            => 200                     // code erreur...
         ];
+
         return $array;
     }
     public function getEmptyDeck()

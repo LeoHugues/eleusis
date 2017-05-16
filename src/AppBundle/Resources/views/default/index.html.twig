@@ -1,85 +1,61 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-    <div id="wrapper">
-        <div id="container">
-            <div class="col-sm-9 col-sm-offset-1 content-block">
-                <h1>Eleusis</h1>
+    <div class="container">
+        <div class="col-sm-12" id="header-game">
+            <div id="dieux-info" class="col-sm-3"></div>
+            <h1 class="col-sm-6 text-center game-title">Elusis</h1>
+            <div id="joueur-info" class="col-sm-3"></div>
+        </div>
+        <div class="col-sm-12" id="body-game">
+
+            <!-- regroupe tous les composants du plateau de jeu -->
+            <div id="game-element">
+                <div class="col-sm-8" id="true-card">
+
+                </div>
+                <div class="col-sm-8" id="false-card"></div>
             </div>
 
-            <div id="status" class="col-sm-9 col-sm-offset-1 content-block">
-                <p>Veuillez entrez votre pseudo : </p>
-                <p><input type="text" id="player-name"/></p>
-                <button id="connect" type="submit"  class="btn btn-primary">Se connecter</button>
-            </div>
 
+            <!-- regroupe tous les composant de connection de connection -->
+            <div id="connect-element">
+                <!-- Button trigger modal de connection -->
+                <button type="button" id="start-btn" class="btn btn-primary col-sm-offset-3 col-sm-6 start-btn" data-toggle="modal" data-target="#connect-modal">
+                    Lancer une partie
+                </button>
+
+                <div id="loader" class="col-sm-10 col-sm-offset-1 text-center">
+                    <h1 id="msg-loader">Merci de patienter pendant que d'autres joueurs rejoignent la partie</h1>
+                    <img class="col-sm-3 col-sm-offset-5" src="{{ asset('bundles/AppBundle/img/spin.gif') }}">
+                </div>
+
+                <!-- Modal de connection -->
+                <div class="modal fade" id="connect-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Se connecter une partie d'Eleusis</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <label>Veuillez entrez votre pseudo : </label>
+                                <input type="text" id="player-name"/>
+                            </div>
+                            <div class="modal-footer">
+                                <button id="connect"  type="button" class="btn btn-primary">connexion</button>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 {% endblock %}
 
 {% block javascripts %}
-    <script>
-
-        var url = "http://127.0.0.1:8000/app_dev.php/api/";
-        var idJoueur = null;
-        var name = null;
-
-        $(document).ready(function() {
-
-            $("#connect").on('click', function(){
-
-                $.ajax({
-                    url: url + 'connect/' + $('#player-name').val(), // form action url
-                    type: 'get', // form submit method get/post
-                    dataType: 'json', // request type html/json/xml
-                    success: function(result) {
-                        console.log('retour call connect success');
-                        idJoueur = result.idJoueur;
-                        name = result.nomJoueur;
-                        // Lancement de la fonction de refresh
-                        refreshGame();
-                    },
-                    error: function (error) {
-                        alert(error.statusText);
-                    }
-
-                });
-            });
-        });
-        
-        function refreshGame() {
-            WS_refresh();
-            setTimeout(refreshGame, 500);
-        }
-
-        //WS FUNCTIONS
-        function WS_refresh(){
-            //Appel le Web Service et retourne l'etat du jeu (tableau)
-            var tableau = {};
-            $.ajax( {
-                type:'Get',
-                url: url + 'turn/' + idJoueur,
-                success:function(retour)
-                {
-                    console.log('retour call refresh success');
-                    if (retour.finPartie == true) {
-                        // Afficher la fin de la partie....
-                        console.log('la partie est termine')
-                    } else {
-                        if (retour.status == 1) {
-                            //faire jouer le joueur
-                            console.log('a moi');
-                        } else {
-                            // Le laisser attendre
-                            console.log('pas a moi');
-                        }
-                    }
-
-                    console.log(retour);
-                }
-            });
-            return tableau;
-        }
-        
-    </script>
+    <script src="{{ asset('bundles/AppBundle/js/GameController.js') }}"></script>
 {% endblock %}
