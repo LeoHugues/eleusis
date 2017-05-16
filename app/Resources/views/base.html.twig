@@ -10,9 +10,9 @@
     </head>
     <body>
         {% block body %}{% endblock %}
+        <script src="{{ asset('component/js/jquery.min.js') }}"></script>
+        <script src="{{ asset('component/js/bootstrap.min.js') }}"></script>
         {% block javascripts %}
-            <script src="{{ asset('component/js/jquery.min.js') }}"></script>
-            <script src="{{ asset('component/js/bootstrap.min.js') }}"></script>
         {% endblock %}
     </body>
 </html>

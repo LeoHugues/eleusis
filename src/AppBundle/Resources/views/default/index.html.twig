@@ -10,9 +10,76 @@
             <div id="status" class="col-sm-9 col-sm-offset-1 content-block">
                 <p>Veuillez entrez votre pseudo : </p>
                 <p><input type="text" id="player-name"/></p>
-                <input type="submit" value="Se connecter" class="btn btn-primary"/>
+                <button id="connect" type="submit"  class="btn btn-primary">Se connecter</button>
             </div>
 
         </div>
     </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+
+        var url = "http://127.0.0.1:8000/app_dev.php/api/";
+        var idJoueur = null;
+        var name = null;
+
+        $(document).ready(function() {
+
+            $("#connect").on('click', function(){
+
+                $.ajax({
+                    url: url + 'connect/' + $('#player-name').val(), // form action url
+                    type: 'get', // form submit method get/post
+                    dataType: 'json', // request type html/json/xml
+                    success: function(result) {
+                        console.log('retour call connect success');
+                        idJoueur = result.idJoueur;
+                        name = result.nomJoueur;
+                        // Lancement de la fonction de refresh
+                        refreshGame();
+                    },
+                    error: function (error) {
+                        alert(error.statusText);
+                    }
+
+                });
+            });
+        });
+        
+        function refreshGame() {
+            WS_refresh();
+            setTimeout(refreshGame, 500);
+        }
+
+        //WS FUNCTIONS
+        function WS_refresh(){
+            //Appel le Web Service et retourne l'etat du jeu (tableau)
+            var tableau = {};
+            $.ajax( {
+                type:'Get',
+                url: url + 'turn/' + idJoueur,
+                success:function(retour)
+                {
+                    console.log('retour call refresh success');
+                    if (retour.finPartie == true) {
+                        // Afficher la fin de la partie....
+                        console.log('la partie est termine')
+                    } else {
+                        if (retour.status == 1) {
+                            //faire jouer le joueur
+                            console.log('a moi');
+                        } else {
+                            // Le laisser attendre
+                            console.log('pas a moi');
+                        }
+                    }
+
+                    console.log(retour);
+                }
+            });
+            return tableau;
+        }
+        
+    </script>
 {% endblock %}
