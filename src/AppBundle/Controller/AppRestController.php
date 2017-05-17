@@ -12,8 +12,9 @@ use Symfony\Component\HttpFoundation\Request;
 class AppRestController extends Controller
 {
     const NB_JOUEUR = 3;
-
-    public $godId = null;
+    const DIEUX_INVENTE_UNE_REGLE   = 0;
+    const DIEUX_VERIFIE_DES_CARTES  = 1;
+    const DIEUX_DIT_SI_PROPHETE     = 2;
 
     /**
      * @Get("/connect/{player}")
@@ -36,10 +37,10 @@ class AppRestController extends Controller
                 'numJoueur' => intval(1)
             ];
             $players = array(
-                'idPlayer1' => $idPlayer,
-                'idPlayer2' => null,
-                'idPlayer3' => null,
-                'idPlayer4' => null,
+                'idJoueur1' => $idPlayer,
+                'idJoueur2' => null,
+                'idJoueur3' => null,
+                'idJoueur4' => null,
                 'nbJoueur' => 1
             );
             file_put_contents($filePlayers, json_encode($players));
@@ -56,7 +57,7 @@ class AppRestController extends Controller
                     'nomJoueur' => $player,
                     'numJoueur' => intval($players['nbJoueur'])
                 ];
-                $players['idPlayer' . $players['nbJoueur']] = $idPlayer;
+                $players['idJoueur' . $players['nbJoueur']] = $idPlayer;
 
                 // Si le nombre de joueur est atteint on peut commencer la partie
                 if ($players['nbJoueur'] == self::NB_JOUEUR) {
@@ -86,97 +87,80 @@ class AppRestController extends Controller
      */
     public function readyAction($idJoueur) {
 
-        $filePlayers = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/Players.json';
-        $filePlayersContent = file_get_contents($filePlayers, true);
-        $players = json_decode($filePlayersContent, true);
+        $players = $this->getPlayers();
+        $godPath = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/God.json';
 
-        if ($this->godId == null) {
-            $this->godId = $players['idPlayer' . rand(1, self::NB_JOUEUR)];
+        if (file_exists($godPath) == false) {
+            $godId = $players['idJoueur' . rand(1, self::NB_JOUEUR)];
+            file_put_contents($godPath, json_encode($godId));
+            $players = $this->refactorPlayers($godId);
+            $this->initTurn();
         }
-        
-        $i = 1;
-        $godIsDefine = false;
-        foreach ($players as $player) {
-            if ($idJoueur == $player) {
-                if ($idJoueur == $this->godId) {
-                    
-                    return new JsonResponse(array('numJoueur' => "god"));
-                } elseif ($godIsDefine) {
-                    
-                    return new JsonResponse(array('numJoueur' => "joueur" . $i-1));
-                } else {
-                    
-                    return new JsonResponse(array('numJoueur' => "joueur" . $i));
-                }
-            } elseif ($player == $this->godId) {
-                $godIsDefine = true;
+
+        foreach ($players as $key => $id)
+        {
+            if ($id == $idJoueur) {
+                return new JsonResponse(array('numJoueur' => $key));
             }
-            
-            $i++;
         }
+
+
+        return new JsonResponse(array('numJoueur' => "joueur" . 2222));
     }
 
     /**
-     * @Get("/play/{x}/{y}/{idPlayer}")
+     * @Get("/god-choose-rules/{rules}")
      */
-    public function playAction(Request $request, $x, $y, $idPlayer)
+    public function dieuxChoisiUneRegleAction($rules)
     {
-        $pathPlayers   = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/Players.json';
-        $players       = file_get_contents($pathPlayers);
-        $players       = json_decode($players, true);
-        $pathStateGame = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/StateGame.json';
-        $stateGame   = file_get_contents($pathStateGame);
-        $stateGame   = json_decode($stateGame, true);
-        $fileTurn    = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/turn.json';
-        $turnContent = file_get_contents($fileTurn);
-        $turn = json_decode($turnContent);
-        if ($stateGame != null) {
-            if ($x < 19 && $y < 19 && $idPlayer != '') {
-                if ($players['idPlayer1'] == $idPlayer || $players['idPlayer2'] == $idPlayer) {
-                    $boardManager = $this->get('app.board_manager');
-                    $boardManager->setPathTime($this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/Times.json');
-                    if ($players['idPlayer1'] == $idPlayer && $turn == $players['idPlayer1']) {
-                        if ($stateGame['tableau'][$x][$y] == 0) {
-                            $stateGame['tableau'][$x][$y] = 1;
-                            $stateGame['code'] = 200;
-                            $stateGame = $boardManager->manage($x, $y, $stateGame, 1);
-                            $this->jaiFinisDeJouer($idPlayer, $players);
-                            file_put_contents($pathStateGame,json_encode($stateGame));
-                            return new JsonResponse(['code' => 200]);
-                        } else {
-                            $response = new JsonResponse(['code' => 406]);
-                            $response->setStatusCode(406);
-                            return $response;
-                        }
-                    } elseif ($players['idPlayer2'] == $idPlayer && $turn == $players['idPlayer2']) {
-                        if ($stateGame['tableau'][$x][$y] == 0) {
-                            $stateGame['tableau'][$x][$y] = 2;
-                            $stateGame['code'] = 200;
-                            $stateGame = $boardManager->manage($x, $y, $stateGame, 2);
-                            $this->jaiFinisDeJouer($idPlayer, $players);
-                            file_put_contents($pathStateGame, json_encode($stateGame));
-                            return new JsonResponse(['code' => 200]);
-                        } else {
-                            $response = new JsonResponse(['code' => 406]);
-                            $response->setStatusCode(406);
-                            return $response;                        }
-                    } else {
-                        $response = new JsonResponse(['code' => 401]);
-                        $response->setStatusCode(401);
-                        return $response;                    }
-                } else {
-                    $response = new JsonResponse(['code' => 401]);
-                    $response->setStatusCode(401);
-                    return $response;
-                }
-            } else {
-                $response = new JsonResponse(['code' => 406]);
-                $response->setStatusCode(406);
-                return $response;            }
-        } else {
-            $response = new JsonResponse(['code' => 401]);
-            $response->setStatusCode(401);
-            return $response;        }
+        $rulesPath = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/Rules.json';
+
+        if (!file_exists($rulesPath)) {
+            file_put_contents($rulesPath, json_encode($rules));
+        }
+
+        $turn = $this->getTurn();
+
+        $turn['lastPlayer'] = $this->getGodId();
+        $turn['nextPlayer'] = $this->getPlayers()['idJoueur1'];
+
+        $this->setTurn($turn);
+
+        return new JsonResponse(array('status' => 'success'));
+    }
+
+    /**
+     * @Get("/god-say-if-cards-match")
+     */
+    public function dieuxDitSiLesCarteRentrenteAction($isProphete)
+    {
+
+    }
+
+    /**
+     * @Get("/god-say-if-prophete/{isProphete")
+     */
+    public function dieuxDitSiPropheteAction($isProphete)
+    {
+
+    }
+
+    /**
+     * @Get("/player-choose-cards/{idJoueur}")
+     */
+    public function joueurSelectionneDesCartesAction(Request $request, $idJoueur)
+    {
+        $cards = $request->get('cards');
+
+        //
+    }
+
+    /**
+     * @Get("/player-say-prophete/{idJoueur}")
+     */
+    public function joueurDitPropheteAction($idJoueur)
+    {
+
     }
 
     /**
@@ -184,21 +168,21 @@ class AppRestController extends Controller
      */
     public function turnAction(Request $request, $idPlayer)
     {
-        $pathStateGame = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/StateGame.json';
+        $players = $this->getPlayers();
 
-        $filePlayers = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/Players.json';
-        $filePlayersContent = file_get_contents($filePlayers, true);
-        $players = json_decode($filePlayersContent, true);
+        $idPlayerExist = false;
+        foreach ($players as $player) {
+            if ($player == $idPlayer) {
+                $idPlayerExist = true;
+            }
+        }
 
         // Si L'id du joueur existe bien
-        if ($idPlayer == $players['idPlayer1'] || $idPlayer == $players['idPlayer2'] || $idPlayer == $players['idPlayer3'] || $idPlayer == $players['idPlayer4']) {
-            $stateGameContent = file_get_contents($pathStateGame);
-            $stateGame = json_decode($stateGameContent, true);
+        if ($idPlayerExist) {
+            $stateGame = $this->getStateGame();
             // Si au moins trois joueurs sont connectés
-            if ($players['nbJoueur'] > 2) {
-                $fileTurn    = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/turn.json';
-                $turnContent = file_get_contents($fileTurn);
-                $turn = json_decode($turnContent);
+            if ($players['nbJoueur'] >= self::NB_JOUEUR) {
+                $turn = $this->getTurn();
 
                 if ($stateGame['finPartie'] == true) {
                     $stateGame['status'] = 0;
@@ -206,7 +190,7 @@ class AppRestController extends Controller
                 }
                 
                 // Si c'est bien à lui de jouer
-                if ($turn == $idPlayer) {
+                if ($turn['nextPlayer'] == $idPlayer) {
                     $stateGame['status'] = 1;
                     return new JsonResponse($stateGame);
                 } else {
@@ -260,24 +244,28 @@ class AppRestController extends Controller
 
     private function clearJsons()
     {
-        $fileTurn    = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/turn.json';
-        $pathPlayers   = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/Players.json';
-        $pathStateGame = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/StateGame.json';
+        $fileTurn       = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/turn.json';
+        $pathPlayers    = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/Players.json';
+        $pathStateGame  = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/StateGame.json';
+        $pathGodId      = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/God.json';
+        $rulesPath = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/Rules.json';
+
         $fs = new Filesystem();
         $fs->remove($fileTurn);
         $fs->remove($pathPlayers);
         $fs->remove($pathStateGame);
+        $fs->remove($pathGodId);
+        $fs->remove($rulesPath);
         $fs->touch($fileTurn);
         $fs->touch($pathStateGame);
-        $this->godId = null;
     }
 
     private function jaiFinisDeJouer($idPlayer, $players) {
         $fileTurn    = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/turn.json';
         if ($idPlayer == $players['idPlayer1']) {
-            $turn = json_encode($players['idPlayer2']);
+            $turn = json_encode($players['idJoueur2']);
         } else {
-            $turn = json_encode($players['idPlayer1']);
+            $turn = json_encode($players['idJoueur1']);
         }
         file_put_contents($fileTurn, $turn);
     }
@@ -287,6 +275,7 @@ class AppRestController extends Controller
         $array = [
             "commencerPartie" => false,                  // True si la partie peu commencer
             "status"          => null,                   // True si c'est à moi sinon false
+            "godRole"         => self::DIEUX_INVENTE_UNE_REGLE,
             "partie"          => $this->getEmptyDeck(),  // Modelisation des cartes
             "finPartie"       => false,                  // True si c'est terminé sinon false
             "detailFinPartie" => null,                   // Explique pourquoi la partie est terminée
@@ -298,5 +287,84 @@ class AppRestController extends Controller
     public function getEmptyDeck()
     {
         return "Ceci doit modéliser le deck";
+    }
+
+    private function getPlayers()
+    {
+        $filePlayers = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/Players.json';
+        $filePlayersContent = file_get_contents($filePlayers, true);
+        return json_decode($filePlayersContent, true);
+    }
+
+    private function getGodId()
+    {
+        $godPath   = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/God.json';
+        $jsonGodId = file_get_contents($godPath, true);
+
+        return json_decode($jsonGodId, true);
+    }
+
+    private function getStateGame() {
+        $pathStateGame = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/StateGame.json';
+        $stateGameContent = file_get_contents($pathStateGame);
+        return json_decode($stateGameContent, true);
+    }
+
+    private function getTurn() {
+        $pathTurn = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/turn.json';
+        $turn = file_get_contents($pathTurn);
+        return json_decode($turn, true);
+    }
+
+    private function setTurn($turn) {
+        $pathTurn = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/turn.json';
+        file_put_contents($pathTurn, $turn);
+    }
+
+    private function initTurn() {
+        $turn = array(
+            'lastPlayer' => null,
+            'nextPlayer' => $this->getGodId()
+        );
+        $fileTurn    = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/turn.json';
+        file_put_contents($fileTurn, json_encode($turn));
+    }
+
+    private function refactorPlayers($godId) {
+        $players = $this->getPlayers();
+        $i = 1;
+        $godIsDefine = false;
+        $newPlayers = array();
+        foreach ($players as $key => $value) {
+
+            if ($key != 'nbJoueur') {
+                if ($value == $godId) {
+                    $newPlayers['god'] = $value;
+                    $godIsDefine = true;
+                } else {
+                    if ($godIsDefine == true) {
+                        $numJoueur = $i-1;
+                        $newPlayers["idJoueur" . $numJoueur] = $value;
+                    } else {
+                        $newPlayers["idJoueur" . $i] = $value;
+                    }
+                }
+            } else {
+                $newPlayers[$key] = $value;
+            }
+            $i++;
+        }
+
+        $filePlayers = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/Players.json';
+
+        file_put_contents($filePlayers, json_encode($newPlayers));
+
+        return $newPlayers;
+    }
+
+
+    private function nextPlayer()
+    {
+        $players = $this->getPlayers();
     }
 }
