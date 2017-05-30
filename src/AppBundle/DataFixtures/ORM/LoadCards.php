@@ -17,7 +17,7 @@ class LoadCards implements FixtureInterface
     public function load(ObjectManager $manager)
     {
         $numbers    = array(1, 2, 3, 4, 5, 6, 7, 8, 9 , 10, 11, 12, 13, 14);
-        $signs      = array('clubs', 'diamonds', 'hearts', 'spades');
+        $signs      = array('coeur', 'pique', 'caro', 'trefle');
 
         foreach($numbers as $number) {
 

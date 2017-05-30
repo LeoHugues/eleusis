@@ -15,6 +15,8 @@ class AppRestController extends Controller
     const DIEUX_INVENTE_UNE_REGLE   = 0;
     const DIEUX_VERIFIE_DES_CARTES  = 1;
     const DIEUX_DIT_SI_PROPHETE     = 2;
+    const JOUEUR_DIT_PROPHETE       = 3;
+    const JOUEUR_SELECTIONNE_CARTES = 4;
 
     /**
      * @Get("/connect/{player}")
@@ -87,6 +89,7 @@ class AppRestController extends Controller
      */
     public function readyAction($idJoueur) {
 
+        $this->resetRefresh();
         $players = $this->getPlayers();
         $godPath = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/God.json';
 
@@ -95,6 +98,11 @@ class AppRestController extends Controller
             file_put_contents($godPath, json_encode($godId));
             $players = $this->refactorPlayers($godId);
             $this->initTurn();
+
+            // Initialisation du jeu
+            $state = $this->getStateGame();
+            $state['partie'] = $this->getEmptyDeck();
+            $this->setStateGame($state);
         }
 
         foreach ($players as $key => $id)
@@ -132,9 +140,9 @@ class AppRestController extends Controller
     /**
      * @Get("/god-say-if-cards-match")
      */
-    public function dieuxDitSiLesCarteRentrenteAction($isProphete)
+    public function dieuxDitSiLesCarteRentrenteAction()
     {
-
+        dump($this->getEmptyDeck());die;
     }
 
     /**
@@ -180,6 +188,14 @@ class AppRestController extends Controller
         // Si L'id du joueur existe bien
         if ($idPlayerExist) {
             $stateGame = $this->getStateGame();
+            /** $refresh => nb de joueur ayant déjà rafraichis le plateau */
+            $refresh = $this->getRefresh();
+            if ($refresh != null && in_array($idPlayer, $refresh)) {// S'il y a pas besoin de rafrichir le plateau de jeu
+                $stateGame['refresh'] = false;
+            } else {
+                $this->addRefresh($idPlayer);
+            }
+
             // Si au moins trois joueurs sont connectés
             if ($players['nbJoueur'] >= self::NB_JOUEUR) {
                 $turn = $this->getTurn();
@@ -188,7 +204,7 @@ class AppRestController extends Controller
                     $stateGame['status'] = 0;
                     return new JsonResponse($stateGame);
                 }
-                
+
                 // Si c'est bien à lui de jouer
                 if ($turn['nextPlayer'] == $idPlayer) {
                     $stateGame['status'] = 1;
@@ -200,6 +216,8 @@ class AppRestController extends Controller
             } else {
                 return new JsonResponse($stateGame);
             }
+
+
         } else {
             $response = new JsonResponse(['code' => 401]);
             $response->setStatusCode(401);
@@ -248,7 +266,8 @@ class AppRestController extends Controller
         $pathPlayers    = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/Players.json';
         $pathStateGame  = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/StateGame.json';
         $pathGodId      = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/God.json';
-        $rulesPath = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/Rules.json';
+        $rulesPath      = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/Rules.json';
+        $refreshPath    = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/Refresh.json';
 
         $fs = new Filesystem();
         $fs->remove($fileTurn);
@@ -256,8 +275,10 @@ class AppRestController extends Controller
         $fs->remove($pathStateGame);
         $fs->remove($pathGodId);
         $fs->remove($rulesPath);
+        $fs->remove($refreshPath);
         $fs->touch($fileTurn);
         $fs->touch($pathStateGame);
+        $fs->touch($refreshPath);
     }
 
     private function jaiFinisDeJouer($idPlayer, $players) {
@@ -275,8 +296,8 @@ class AppRestController extends Controller
         $array = [
             "commencerPartie" => false,                  // True si la partie peu commencer
             "status"          => null,                   // True si c'est à moi sinon false
+            "refresh"         => true,                   // True si il y a eu un changement
             "godRole"         => self::DIEUX_INVENTE_UNE_REGLE,
-            "partie"          => $this->getEmptyDeck(),  // Modelisation des cartes
             "finPartie"       => false,                  // True si c'est terminé sinon false
             "detailFinPartie" => null,                   // Explique pourquoi la partie est terminée
             "code"            => 200                     // code erreur...
@@ -284,9 +305,203 @@ class AppRestController extends Controller
 
         return $array;
     }
+
+
     public function getEmptyDeck()
     {
-        return "Ceci doit modéliser le deck";
+        /** Deux paquets de 52 cartes*/
+        $cartes = array(
+            array('couleur' => 'pique',  'valeur' => '1'),
+            array('couleur' => 'trefle', 'valeur' => '1'),
+            array('couleur' => 'coeur',  'valeur' => '1'),
+            array('couleur' => 'carreau','valeur' => '1'),
+
+            array('couleur' => 'pique',  'valeur' => '2'),
+            array('couleur' => 'trefle', 'valeur' => '2'),
+            array('couleur' => 'coeur',  'valeur' => '2'),
+            array('couleur' => 'carreau','valeur' => '2'),
+
+            array('couleur' => 'pique',  'valeur' => '3'),
+            array('couleur' => 'trefle', 'valeur' => '3'),
+            array('couleur' => 'coeur',  'valeur' => '3'),
+            array('couleur' => 'carreau','valeur' => '3'),
+
+            array('couleur' => 'pique',  'valeur' => '4'),
+            array('couleur' => 'trefle', 'valeur' => '4'),
+            array('couleur' => 'coeur',  'valeur' => '4'),
+            array('couleur' => 'carreau','valeur' => '4'),
+
+            array('couleur' => 'pique',  'valeur' => '5'),
+            array('couleur' => 'trefle', 'valeur' => '5'),
+            array('couleur' => 'coeur',  'valeur' => '5'),
+            array('couleur' => 'carreau','valeur' => '5'),
+
+            array('couleur' => 'pique',  'valeur' => '6'),
+            array('couleur' => 'trefle', 'valeur' => '6'),
+            array('couleur' => 'coeur',  'valeur' => '6'),
+            array('couleur' => 'carreau','valeur' => '6'),
+
+            array('couleur' => 'pique',  'valeur' => '7'),
+            array('couleur' => 'trefle', 'valeur' => '7'),
+            array('couleur' => 'coeur',  'valeur' => '7'),
+            array('couleur' => 'carreau','valeur' => '7'),
+
+            array('couleur' => 'pique',  'valeur' => '8'),
+            array('couleur' => 'trefle', 'valeur' => '8'),
+            array('couleur' => 'coeur',  'valeur' => '8'),
+            array('couleur' => 'carreau','valeur' => '8'),
+
+            array('couleur' => 'pique',  'valeur' => '9'),
+            array('couleur' => 'trefle', 'valeur' => '9'),
+            array('couleur' => 'coeur',  'valeur' => '9'),
+            array('couleur' => 'carreau','valeur' => '9'),
+
+            array('couleur' => 'pique',  'valeur' => '10'),
+            array('couleur' => 'trefle', 'valeur' => '10'),
+            array('couleur' => 'coeur',  'valeur' => '10'),
+            array('couleur' => 'carreau','valeur' => '10'),
+
+            array('couleur' => 'pique',  'valeur' => '11'),
+            array('couleur' => 'trefle', 'valeur' => '11'),
+            array('couleur' => 'coeur',  'valeur' => '11'),
+            array('couleur' => 'carreau','valeur' => '11'),
+
+            array('couleur' => 'pique',  'valeur' => '12'),
+            array('couleur' => 'trefle', 'valeur' => '12'),
+            array('couleur' => 'coeur',  'valeur' => '12'),
+            array('couleur' => 'carreau','valeur' => '12'),
+
+            array('couleur' => 'pique',  'valeur' => '13'),
+            array('couleur' => 'trefle', 'valeur' => '13'),
+            array('couleur' => 'coeur',  'valeur' => '13'),
+            array('couleur' => 'carreau','valeur' => '13'),
+            
+            array('couleur' => 'pique',  'valeur' => '1'),
+            array('couleur' => 'trefle', 'valeur' => '1'),
+            array('couleur' => 'coeur',  'valeur' => '1'),
+            array('couleur' => 'carreau','valeur' => '1'),
+
+            array('couleur' => 'pique',  'valeur' => '2'),
+            array('couleur' => 'trefle', 'valeur' => '2'),
+            array('couleur' => 'coeur',  'valeur' => '2'),
+            array('couleur' => 'carreau','valeur' => '2'),
+
+            array('couleur' => 'pique',  'valeur' => '3'),
+            array('couleur' => 'trefle', 'valeur' => '3'),
+            array('couleur' => 'coeur',  'valeur' => '3'),
+            array('couleur' => 'carreau','valeur' => '3'),
+
+            array('couleur' => 'pique',  'valeur' => '4'),
+            array('couleur' => 'trefle', 'valeur' => '4'),
+            array('couleur' => 'coeur',  'valeur' => '4'),
+            array('couleur' => 'carreau','valeur' => '4'),
+
+            array('couleur' => 'pique',  'valeur' => '5'),
+            array('couleur' => 'trefle', 'valeur' => '5'),
+            array('couleur' => 'coeur',  'valeur' => '5'),
+            array('couleur' => 'carreau','valeur' => '5'),
+
+            array('couleur' => 'pique',  'valeur' => '6'),
+            array('couleur' => 'trefle', 'valeur' => '6'),
+            array('couleur' => 'coeur',  'valeur' => '6'),
+            array('couleur' => 'carreau','valeur' => '6'),
+
+            array('couleur' => 'pique',  'valeur' => '7'),
+            array('couleur' => 'trefle', 'valeur' => '7'),
+            array('couleur' => 'coeur',  'valeur' => '7'),
+            array('couleur' => 'carreau','valeur' => '7'),
+
+            array('couleur' => 'pique',  'valeur' => '8'),
+            array('couleur' => 'trefle', 'valeur' => '8'),
+            array('couleur' => 'coeur',  'valeur' => '8'),
+            array('couleur' => 'carreau','valeur' => '8'),
+
+            array('couleur' => 'pique',  'valeur' => '9'),
+            array('couleur' => 'trefle', 'valeur' => '9'),
+            array('couleur' => 'coeur',  'valeur' => '9'),
+            array('couleur' => 'carreau','valeur' => '9'),
+
+            array('couleur' => 'pique',  'valeur' => '10'),
+            array('couleur' => 'trefle', 'valeur' => '10'),
+            array('couleur' => 'coeur',  'valeur' => '10'),
+            array('couleur' => 'carreau','valeur' => '10'),
+
+            array('couleur' => 'pique',  'valeur' => '11'),
+            array('couleur' => 'trefle', 'valeur' => '11'),
+            array('couleur' => 'coeur',  'valeur' => '11'),
+            array('couleur' => 'carreau','valeur' => '11'),
+
+            array('couleur' => 'pique',  'valeur' => '12'),
+            array('couleur' => 'trefle', 'valeur' => '12'),
+            array('couleur' => 'coeur',  'valeur' => '12'),
+            array('couleur' => 'carreau','valeur' => '12'),
+
+            array('couleur' => 'pique',  'valeur' => '13'),
+            array('couleur' => 'trefle', 'valeur' => '13'),
+            array('couleur' => 'coeur',  'valeur' => '13'),
+            array('couleur' => 'carreau','valeur' => '13'),
+        );
+
+        shuffle($cartes);
+
+        $partie = array(
+            'pioche'            => $cartes,
+            'bonnes-cartes'     => array(),
+            'mauvaises-cartes'  => array(),
+        );
+        
+        $players = $this->getPlayers();
+        
+        foreach ($players as $key => $idPlayer) {
+            if ($key != "god" && $key != "nbJoueur" && $idPlayer != null) {
+                $deckTmp = array_slice($partie['pioche'], 0, 5, true);
+                $deck = array_slice($partie['pioche'], 0, 5);
+                $partie['pioche'] = $this->array_diff_assoc_recursive($partie['pioche'], $deckTmp);
+                $partie['deckJ' . substr($key, -1)] = $deck;
+            }
+        }
+
+        return $partie;
+    }
+
+    private function array_diff_assoc_recursive($array1, $array2) {
+        $difference=array();
+        foreach($array1 as $key => $value) {
+            if( is_array($value) ) {
+                if( !isset($array2[$key]) || !is_array($array2[$key]) ) {
+                    $difference[$key] = $value;
+                } else {
+                    $new_diff = $this->array_diff_assoc_recursive($value, $array2[$key]);
+                    if( !empty($new_diff) )
+                        $difference[$key] = $new_diff;
+                }
+            } else if( !array_key_exists($key,$array2) || $array2[$key] !== $value ) {
+                $difference[$key] = $value;
+            }
+        }
+        return $difference;
+    }
+
+    private function getRefresh()
+    {
+        $refreshPath = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/Refresh.json';
+        $refresh = file_get_contents($refreshPath, true);
+        return json_decode($refresh, true);
+    }
+
+    private function addRefresh($idJoueur) {
+        $refreshPath = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/Refresh.json';
+        $refresh = file_get_contents($refreshPath, true);
+        $refresh = json_decode($refresh, true);
+        $refresh[] = $idJoueur;
+        file_put_contents($refreshPath, json_encode($refresh, true));
+    }
+
+    private function resetRefresh() {
+        $refreshPath    = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/Refresh.json';
+        $fs = new Filesystem();
+        $fs->remove($refreshPath);
+        $fs->touch($refreshPath);
     }
 
     private function getPlayers()
@@ -310,6 +525,11 @@ class AppRestController extends Controller
         return json_decode($stateGameContent, true);
     }
 
+    private function setStateGame($state) {
+        $pathStateGame = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/StateGame.json';
+        file_put_contents($pathStateGame, json_encode($state, true));
+    }
+
     private function getTurn() {
         $pathTurn = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/turn.json';
         $turn = file_get_contents($pathTurn);
@@ -318,7 +538,7 @@ class AppRestController extends Controller
 
     private function setTurn($turn) {
         $pathTurn = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/turn.json';
-        file_put_contents($pathTurn, $turn);
+        file_put_contents($pathTurn, json_encode($turn, true));
     }
 
     private function initTurn() {
