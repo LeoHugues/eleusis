@@ -1,0 +1,79 @@
+@font-face {
+    font-family: title-typo;
+    src: url(../fonts/title-typo.otf);
+}
+
+@font-face {
+    font-family: panama-light;
+    src: url(../fonts/Panama-Light.otf);
+}
+
+.game-title {
+    font-family: title-typo;
+    font-size: 15em;
+    color: #270722;
+}
+
+body {
+    background-color: #DB5A42;
+}
+
+button.start-btn {
+    background-color: #FFD275;
+    border-color: #270722;
+    color: #270722;
+    height: 75px;
+    font-family: panama-light;
+    font-size: 2.5em;
+}
+
+button.start-btn:hover {
+    background-color: #8C7340;
+}
+
+button.start-btn:focus {
+    background-color: #FFD275;
+}
+
+#game-element{
+    display: none;
+}
+
+#true-card {
+    background-color: #9CB380;
+    min-height: 200px;
+    margin-bottom: 10px;
+    border-radius: 20px;
+}
+
+#false-card {
+    background-color: #A4303F;
+    min-height: 200px;
+    border-radius: 20px;
+}
+
+#loader {
+    display: none;
+
+}
+
+#msg-loader {
+    font-family: panama-light;
+    color: #FFD275;
+    font-weight: bold;
+    margin-bottom: 40px;
+}
+
+.card {
+    background: bisque;
+    margin: 4px;
+}
+
+
+.card:hover {
+    background: #9CB380;
+}
+
+.selected {
+    background: #9CB380;
+}
