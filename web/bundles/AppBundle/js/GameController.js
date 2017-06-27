@@ -2,7 +2,7 @@
  * Created by lehug on 16/05/17.
  */
 
-var url = "http://127.0.0.1:8000/app_dev.php/api/";
+var url = "http://localhost:8888/eleusis/web/app_dev.php/";
 var idJoueur = null;
 var numJoueur = null;
 var name = null;

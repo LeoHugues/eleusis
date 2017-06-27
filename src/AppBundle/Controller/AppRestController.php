@@ -123,6 +123,18 @@ class AppRestController extends Controller
     {
         $rulesPath = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/Rules.json';
 
+        $numCard           = array(1,2,3,4,5,6,7,8,9,10,11,12,13);
+        $peer              = array('yes','no');
+        $cardType          = array('trèfle', 'pique', 'carreau', 'coeur');
+        $colors            = array('noir', 'rouge');
+        $numberCardsToPut  = array(1,2,3,4,5);
+        $redundancy        = array(0,1,2,3,4); // The number of intermediate(s) card(s)
+        $alternancy        = array('yes', 'no'); // ex : One red card then one black card
+
+        $rule = array('numberCardsToPut' => 2,'colors' => 'rouge', 'numCard' => null, 'cardType' => null, 'redundancy' => 0, 'alternancy' => 'no');
+
+        
+
         if (!file_exists($rulesPath)) {
             file_put_contents($rulesPath, json_encode($rules));
         }
