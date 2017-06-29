@@ -138,11 +138,11 @@ class AppRestController extends Controller
     }
 
     /**
-     * @Get("/god-say-if-cards-match")
+     * @Get("/god-say-if-cards-match/{reponse}")
      */
-    public function dieuxDitSiLesCarteRentrenteAction()
+    public function dieuxDitSiLesCarteRentrenteAction($reponse)
     {
-        dump($this->getEmptyDeck());die;
+        dump($reponse);die;
     }
 
     /**
@@ -160,7 +160,20 @@ class AppRestController extends Controller
     {
         $cards = $request->get('cards');
 
-        //
+        $state = $this->getStateGame();
+        $state['partie']['selectedCard'] = $cards;
+        $state['godRole'] = $this::DIEUX_VERIFIE_DES_CARTES;
+
+        $this->setStateGame($state);
+
+        $turn = $this->getTurn();
+
+        $turn['lastPlayer'] = $idJoueur;
+        $turn['nextPlayer'] = $this->getGodId();
+
+        $this->setTurn($turn);
+
+        return new JsonResponse(['status' => 'success']);
     }
 
     /**
@@ -311,135 +324,135 @@ class AppRestController extends Controller
     {
         /** Deux paquets de 52 cartes*/
         $cartes = array(
-            array('couleur' => 'pique',  'valeur' => '1'),
-            array('couleur' => 'trefle', 'valeur' => '1'),
-            array('couleur' => 'coeur',  'valeur' => '1'),
-            array('couleur' => 'carreau','valeur' => '1'),
+            array('color' => 'pique',  'number' => '1'),
+            array('color' => 'trefle', 'number' => '1'),
+            array('color' => 'coeur',  'number' => '1'),
+            array('color' => 'carreau','number' => '1'),
 
-            array('couleur' => 'pique',  'valeur' => '2'),
-            array('couleur' => 'trefle', 'valeur' => '2'),
-            array('couleur' => 'coeur',  'valeur' => '2'),
-            array('couleur' => 'carreau','valeur' => '2'),
+            array('color' => 'pique',  'number' => '2'),
+            array('color' => 'trefle', 'number' => '2'),
+            array('color' => 'coeur',  'number' => '2'),
+            array('color' => 'carreau','number' => '2'),
 
-            array('couleur' => 'pique',  'valeur' => '3'),
-            array('couleur' => 'trefle', 'valeur' => '3'),
-            array('couleur' => 'coeur',  'valeur' => '3'),
-            array('couleur' => 'carreau','valeur' => '3'),
+            array('color' => 'pique',  'number' => '3'),
+            array('color' => 'trefle', 'number' => '3'),
+            array('color' => 'coeur',  'number' => '3'),
+            array('color' => 'carreau','number' => '3'),
 
-            array('couleur' => 'pique',  'valeur' => '4'),
-            array('couleur' => 'trefle', 'valeur' => '4'),
-            array('couleur' => 'coeur',  'valeur' => '4'),
-            array('couleur' => 'carreau','valeur' => '4'),
+            array('color' => 'pique',  'number' => '4'),
+            array('color' => 'trefle', 'number' => '4'),
+            array('color' => 'coeur',  'number' => '4'),
+            array('color' => 'carreau','number' => '4'),
 
-            array('couleur' => 'pique',  'valeur' => '5'),
-            array('couleur' => 'trefle', 'valeur' => '5'),
-            array('couleur' => 'coeur',  'valeur' => '5'),
-            array('couleur' => 'carreau','valeur' => '5'),
+            array('color' => 'pique',  'number' => '5'),
+            array('color' => 'trefle', 'number' => '5'),
+            array('color' => 'coeur',  'number' => '5'),
+            array('color' => 'carreau','number' => '5'),
 
-            array('couleur' => 'pique',  'valeur' => '6'),
-            array('couleur' => 'trefle', 'valeur' => '6'),
-            array('couleur' => 'coeur',  'valeur' => '6'),
-            array('couleur' => 'carreau','valeur' => '6'),
+            array('color' => 'pique',  'number' => '6'),
+            array('color' => 'trefle', 'number' => '6'),
+            array('color' => 'coeur',  'number' => '6'),
+            array('color' => 'carreau','number' => '6'),
 
-            array('couleur' => 'pique',  'valeur' => '7'),
-            array('couleur' => 'trefle', 'valeur' => '7'),
-            array('couleur' => 'coeur',  'valeur' => '7'),
-            array('couleur' => 'carreau','valeur' => '7'),
+            array('color' => 'pique',  'number' => '7'),
+            array('color' => 'trefle', 'number' => '7'),
+            array('color' => 'coeur',  'number' => '7'),
+            array('color' => 'carreau','number' => '7'),
 
-            array('couleur' => 'pique',  'valeur' => '8'),
-            array('couleur' => 'trefle', 'valeur' => '8'),
-            array('couleur' => 'coeur',  'valeur' => '8'),
-            array('couleur' => 'carreau','valeur' => '8'),
+            array('color' => 'pique',  'number' => '8'),
+            array('color' => 'trefle', 'number' => '8'),
+            array('color' => 'coeur',  'number' => '8'),
+            array('color' => 'carreau','number' => '8'),
 
-            array('couleur' => 'pique',  'valeur' => '9'),
-            array('couleur' => 'trefle', 'valeur' => '9'),
-            array('couleur' => 'coeur',  'valeur' => '9'),
-            array('couleur' => 'carreau','valeur' => '9'),
+            array('color' => 'pique',  'number' => '9'),
+            array('color' => 'trefle', 'number' => '9'),
+            array('color' => 'coeur',  'number' => '9'),
+            array('color' => 'carreau','number' => '9'),
 
-            array('couleur' => 'pique',  'valeur' => '10'),
-            array('couleur' => 'trefle', 'valeur' => '10'),
-            array('couleur' => 'coeur',  'valeur' => '10'),
-            array('couleur' => 'carreau','valeur' => '10'),
+            array('color' => 'pique',  'number' => '10'),
+            array('color' => 'trefle', 'number' => '10'),
+            array('color' => 'coeur',  'number' => '10'),
+            array('color' => 'carreau','number' => '10'),
 
-            array('couleur' => 'pique',  'valeur' => '11'),
-            array('couleur' => 'trefle', 'valeur' => '11'),
-            array('couleur' => 'coeur',  'valeur' => '11'),
-            array('couleur' => 'carreau','valeur' => '11'),
+            array('color' => 'pique',  'number' => '11'),
+            array('color' => 'trefle', 'number' => '11'),
+            array('color' => 'coeur',  'number' => '11'),
+            array('color' => 'carreau','number' => '11'),
 
-            array('couleur' => 'pique',  'valeur' => '12'),
-            array('couleur' => 'trefle', 'valeur' => '12'),
-            array('couleur' => 'coeur',  'valeur' => '12'),
-            array('couleur' => 'carreau','valeur' => '12'),
+            array('color' => 'pique',  'number' => '12'),
+            array('color' => 'trefle', 'number' => '12'),
+            array('color' => 'coeur',  'number' => '12'),
+            array('color' => 'carreau','number' => '12'),
 
-            array('couleur' => 'pique',  'valeur' => '13'),
-            array('couleur' => 'trefle', 'valeur' => '13'),
-            array('couleur' => 'coeur',  'valeur' => '13'),
-            array('couleur' => 'carreau','valeur' => '13'),
+            array('color' => 'pique',  'number' => '13'),
+            array('color' => 'trefle', 'number' => '13'),
+            array('color' => 'coeur',  'number' => '13'),
+            array('color' => 'carreau','number' => '13'),
             
-            array('couleur' => 'pique',  'valeur' => '1'),
-            array('couleur' => 'trefle', 'valeur' => '1'),
-            array('couleur' => 'coeur',  'valeur' => '1'),
-            array('couleur' => 'carreau','valeur' => '1'),
+            array('color' => 'pique',  'number' => '1'),
+            array('color' => 'trefle', 'number' => '1'),
+            array('color' => 'coeur',  'number' => '1'),
+            array('color' => 'carreau','number' => '1'),
 
-            array('couleur' => 'pique',  'valeur' => '2'),
-            array('couleur' => 'trefle', 'valeur' => '2'),
-            array('couleur' => 'coeur',  'valeur' => '2'),
-            array('couleur' => 'carreau','valeur' => '2'),
+            array('color' => 'pique',  'number' => '2'),
+            array('color' => 'trefle', 'number' => '2'),
+            array('color' => 'coeur',  'number' => '2'),
+            array('color' => 'carreau','number' => '2'),
 
-            array('couleur' => 'pique',  'valeur' => '3'),
-            array('couleur' => 'trefle', 'valeur' => '3'),
-            array('couleur' => 'coeur',  'valeur' => '3'),
-            array('couleur' => 'carreau','valeur' => '3'),
+            array('color' => 'pique',  'number' => '3'),
+            array('color' => 'trefle', 'number' => '3'),
+            array('color' => 'coeur',  'number' => '3'),
+            array('color' => 'carreau','number' => '3'),
 
-            array('couleur' => 'pique',  'valeur' => '4'),
-            array('couleur' => 'trefle', 'valeur' => '4'),
-            array('couleur' => 'coeur',  'valeur' => '4'),
-            array('couleur' => 'carreau','valeur' => '4'),
+            array('color' => 'pique',  'number' => '4'),
+            array('color' => 'trefle', 'number' => '4'),
+            array('color' => 'coeur',  'number' => '4'),
+            array('color' => 'carreau','number' => '4'),
 
-            array('couleur' => 'pique',  'valeur' => '5'),
-            array('couleur' => 'trefle', 'valeur' => '5'),
-            array('couleur' => 'coeur',  'valeur' => '5'),
-            array('couleur' => 'carreau','valeur' => '5'),
+            array('color' => 'pique',  'number' => '5'),
+            array('color' => 'trefle', 'number' => '5'),
+            array('color' => 'coeur',  'number' => '5'),
+            array('color' => 'carreau','number' => '5'),
 
-            array('couleur' => 'pique',  'valeur' => '6'),
-            array('couleur' => 'trefle', 'valeur' => '6'),
-            array('couleur' => 'coeur',  'valeur' => '6'),
-            array('couleur' => 'carreau','valeur' => '6'),
+            array('color' => 'pique',  'number' => '6'),
+            array('color' => 'trefle', 'number' => '6'),
+            array('color' => 'coeur',  'number' => '6'),
+            array('color' => 'carreau','number' => '6'),
 
-            array('couleur' => 'pique',  'valeur' => '7'),
-            array('couleur' => 'trefle', 'valeur' => '7'),
-            array('couleur' => 'coeur',  'valeur' => '7'),
-            array('couleur' => 'carreau','valeur' => '7'),
+            array('color' => 'pique',  'number' => '7'),
+            array('color' => 'trefle', 'number' => '7'),
+            array('color' => 'coeur',  'number' => '7'),
+            array('color' => 'carreau','number' => '7'),
 
-            array('couleur' => 'pique',  'valeur' => '8'),
-            array('couleur' => 'trefle', 'valeur' => '8'),
-            array('couleur' => 'coeur',  'valeur' => '8'),
-            array('couleur' => 'carreau','valeur' => '8'),
+            array('color' => 'pique',  'number' => '8'),
+            array('color' => 'trefle', 'number' => '8'),
+            array('color' => 'coeur',  'number' => '8'),
+            array('color' => 'carreau','number' => '8'),
 
-            array('couleur' => 'pique',  'valeur' => '9'),
-            array('couleur' => 'trefle', 'valeur' => '9'),
-            array('couleur' => 'coeur',  'valeur' => '9'),
-            array('couleur' => 'carreau','valeur' => '9'),
+            array('color' => 'pique',  'number' => '9'),
+            array('color' => 'trefle', 'number' => '9'),
+            array('color' => 'coeur',  'number' => '9'),
+            array('color' => 'carreau','number' => '9'),
 
-            array('couleur' => 'pique',  'valeur' => '10'),
-            array('couleur' => 'trefle', 'valeur' => '10'),
-            array('couleur' => 'coeur',  'valeur' => '10'),
-            array('couleur' => 'carreau','valeur' => '10'),
+            array('color' => 'pique',  'number' => '10'),
+            array('color' => 'trefle', 'number' => '10'),
+            array('color' => 'coeur',  'number' => '10'),
+            array('color' => 'carreau','number' => '10'),
 
-            array('couleur' => 'pique',  'valeur' => '11'),
-            array('couleur' => 'trefle', 'valeur' => '11'),
-            array('couleur' => 'coeur',  'valeur' => '11'),
-            array('couleur' => 'carreau','valeur' => '11'),
+            array('color' => 'pique',  'number' => '11'),
+            array('color' => 'trefle', 'number' => '11'),
+            array('color' => 'coeur',  'number' => '11'),
+            array('color' => 'carreau','number' => '11'),
 
-            array('couleur' => 'pique',  'valeur' => '12'),
-            array('couleur' => 'trefle', 'valeur' => '12'),
-            array('couleur' => 'coeur',  'valeur' => '12'),
-            array('couleur' => 'carreau','valeur' => '12'),
+            array('color' => 'pique',  'number' => '12'),
+            array('color' => 'trefle', 'number' => '12'),
+            array('color' => 'coeur',  'number' => '12'),
+            array('color' => 'carreau','number' => '12'),
 
-            array('couleur' => 'pique',  'valeur' => '13'),
-            array('couleur' => 'trefle', 'valeur' => '13'),
-            array('couleur' => 'coeur',  'valeur' => '13'),
-            array('couleur' => 'carreau','valeur' => '13'),
+            array('color' => 'pique',  'number' => '13'),
+            array('color' => 'trefle', 'number' => '13'),
+            array('color' => 'coeur',  'number' => '13'),
+            array('color' => 'carreau','number' => '13'),
         );
 
         shuffle($cartes);
@@ -448,6 +461,7 @@ class AppRestController extends Controller
             'pioche'            => $cartes,
             'bonnes-cartes'     => array(),
             'mauvaises-cartes'  => array(),
+            'selectedCard'    => array(),
         );
         
         $players = $this->getPlayers();

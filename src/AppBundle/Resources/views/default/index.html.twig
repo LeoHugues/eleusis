@@ -4,7 +4,7 @@
     <div class="container">
         <div class="col-sm-12" id="header-game">
             <div id="dieux-info" class="col-sm-3"></div>
-            <h1 class="col-sm-6 text-center game-title">Elusis</h1>
+            <h1 class="col-sm-6 text-center game-title">Eleusis</h1>
             <div id="joueur-info" class="col-sm-3"></div>
         </div>
         <div class="col-sm-12" id="body-game">
@@ -37,6 +37,26 @@
                             </div>
                             <div class="modal-footer">
                                 <button id="send"  type="button" class="btn btn-primary">c'est parti !</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="check-card" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Les cartes rentrent elle dans la règle ?</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <div id="selected-card"></div>
+                            </div>
+                            <div class="modal-footer">
+                                <button id="card-ok"  type="button" class="btn btn-primary">oui</button>
+                                <button id="card-ko"  type="button" class="btn btn-danger">non</button>
                             </div>
                         </div>
                     </div>

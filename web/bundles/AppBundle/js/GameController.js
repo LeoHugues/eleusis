@@ -90,6 +90,20 @@ function WS_refresh() {
                                 $('#send').on('click', function () {
                                     WS_godRules($('#rules-content').val());
                                 });
+                            } else if (retour.godRole == 1) { // dieux dit si les cartes rentres ou non
+                                
+                                afficherPropositionjoueur(retour.partie.selectedCard);
+                                $('#check-card').modal();
+                                $('#card-ok').on('click', function () {
+                                    WS_godCheckCard(true);
+                                });
+                                $('#card-ko').on('click', function () {
+                                    WS_godCheckCard(false);
+                                });
+                                
+                                
+                            } else if (retour.godRole == 1) { // dieux dit si prophete ou non
+                                
                             }
                         } else {
                             // En temps que joueur
@@ -151,21 +165,24 @@ function refreshBoard(retour) {
 
 function getHTMLcard(card) {
     var labelValue = document.createElement("label");
-    labelValue.innerText = card.valeur;
+    labelValue.innerText = card.number;
     
     var br = document.createElement("br");
 
     var labelColor = document.createElement("label");
-    labelColor.innerText = card.couleur;
+    labelColor.innerText = card.color;
 
     var div = document.createElement("div");
-    div.className = "col-sm-1 card";
+    div.className = "col-sm-1 card my-card";
+    div.dataset.color = card.color;
+    div.dataset.value = card.number;
     div.appendChild(labelValue);
     div.appendChild(br);
     div.appendChild(labelColor);
 
     return div;
 }
+
 //WS FUNCTIONS
 function WS_ready() {
     //Appel le Web Service pour confirmer qu'on est pret à jouer et reccupérer des infos de debut de partie
@@ -184,6 +201,64 @@ function WS_ready() {
             }
             $('#game-element').show();
             gameAlreadyStart = true;
+
+            $("#send-card").on('click', function(){
+
+                selectedCards = getSelectedCard();
+
+                $.ajax({
+                    url: url + 'player-choose-cards/' + idJoueur, // form action url
+                    type: 'get', // form submit method get/post
+                    dataType: 'json', // request type html/json/xml
+                    data: {cards: selectedCards},
+                    success: function(result) {
+                    },
+                    error: function (error) {
+                        alert(error.statusText);
+                    }
+
+                });
+            });
         }
     });
+}
+
+function getSelectedCard() {
+    var selectedCards  = [];
+
+    $('.my-card').each(function () {
+
+        if ($(this).hasClass('selected')) {
+            card = { color: $(this).data('color'), number: $(this).data('value') };
+            selectedCards.push(card);
+            $(this).removeClass('selected');
+        }
+    });
+
+    return selectedCards;
+}
+
+
+function WS_godCheckCard(reponse) {
+    $.ajax({
+        url: url + 'god-say-if-cards-match/' + reponse, // form action url
+        type: 'get', // form submit method get/post
+        dataType: 'json', // request type html/json/xml
+        success: function(result) {
+        },
+        error: function (error) {
+            alert(error.statusText);
+        }
+
+    });
+}
+
+function afficherPropositionjoueur(cards) {
+    var selectedCards = document.getElementById('selected-card');
+    selectedCards.childNodes = null;
+
+    for (i = 0, len = cards.length; i < len; i++) {
+        var div = getHTMLcard(cards[i]);
+        selectedCards.appendChild(div);
+    }
 }
