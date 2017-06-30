@@ -138,11 +138,84 @@ class AppRestController extends Controller
     }
 
     /**
-     * @Get("/god-say-if-cards-match/{reponse}")
+     * @Get("/god-say-if-cards-match/{caca}")
      */
-    public function dieuxDitSiLesCarteRentrenteAction($reponse)
+    public function dieuxDitSiLesCarteRentrenteAction($caca)
     {
-        dump($reponse);die;
+        $turn       = $this->getTurn();
+        $stateGame  = $this->getStateGame();
+
+        if ($caca == "true") { // Les cartes sont bonnes : Le joueur rejoue
+            $turn['nextPlayer'] = $turn['lastPlayer'];
+            $turn['lastPlayer'] = $this->getGodId();
+            $this->setTurn($turn);
+
+            // On retir les cartes validé par dieux de la main du joueur
+            $keyDeckJoueur = 'deckJ' . substr($this->getJoueurById($turn['nextPlayer']), -1);
+            $newDeck = $this->getNewDeck($stateGame, $keyDeckJoueur);
+            $stateGame['partie'][$keyDeckJoueur] = $newDeck;
+            $stateGame['partie']['bonnesCartes'][] = $stateGame['partie']['selectedCard'];
+            $stateGame['partie'][$keyDeckJoueur] = $newDeck;
+            $stateGame['partie']['selectedCard'] = array();
+            $this->setStateGame($stateGame);
+
+        }
+
+        if ($caca == "false") { // Les cartes sont mauvaises : Au joueur suivant et on redonne des cartes au joueur
+
+            $players = $this->getPlayers();
+            foreach ($players as $key => $idJoueur) {
+                if ($idJoueur == $turn['lastPlayer']) {
+                    $numJoueur = substr($key, -1);
+                    if ($numJoueur == 1) {
+                        $turn['nextPlayer'] = $players['idJoueur2'];
+                    } else {
+                        $turn['nextPlayer'] = $players['idJoueur1'];
+                    }
+                }
+            }
+            $turn['lastPlayer'] = $players['god'];
+
+            $this->setTurn($turn);
+
+            $keyDeckJoueur = 'deckJ' . substr($this->getJoueurById($turn['nextPlayer']), -1);
+            $newDeck = $this->getNewDeck($stateGame, $keyDeckJoueur);
+            $stateGame['partie']['mauvaisesCartes'][] = $stateGame['partie']['selectedCard'];
+            $stateGame['partie']['selectedCard'] = array();
+
+            $deckTmp = array_slice($stateGame['partie']['pioche'], 0, 5 - count($newDeck), true);
+            $deck = array_slice($stateGame['partie']['pioche'], 0, 5 - count($newDeck));
+            $newDeck = array_merge($newDeck, $deck);
+            $stateGame['partie']['pioche'] = $this->array_diff_assoc_recursive($stateGame['partie']['pioche'], $deckTmp);
+            $stateGame['partie'][$keyDeckJoueur] = $newDeck;
+            $this->setStateGame($stateGame);
+        }
+
+        $this->resetRefresh();
+
+        return new JsonResponse(['status' => 'success']);
+    }
+
+    private function getNewDeck($stateGame, $keyDeckJoueur) {
+        $deckPlayer    = $stateGame['partie'][$keyDeckJoueur];
+        $selectedCards = $stateGame['partie']['selectedCard'];
+
+        $newDeck = array();
+
+        foreach ($deckPlayer as $card) {
+            $isSelected = false;
+            foreach ($selectedCards as $selected) {
+                if ($card['color'] == $selected['color'] && $card['number'] == $selected['number']) {
+                    $isSelected = true;
+                }
+            }
+
+            if ($isSelected == false) {
+                $newDeck[] = $card;
+            }
+        }
+
+        return $newDeck;
     }
 
     /**
@@ -172,6 +245,8 @@ class AppRestController extends Controller
         $turn['nextPlayer'] = $this->getGodId();
 
         $this->setTurn($turn);
+
+        $this->resetRefresh();
 
         return new JsonResponse(['status' => 'success']);
     }
@@ -459,8 +534,8 @@ class AppRestController extends Controller
 
         $partie = array(
             'pioche'            => $cartes,
-            'bonnes-cartes'     => array(),
-            'mauvaises-cartes'  => array(),
+            'bonnesCartes'     => array(),
+            'mauvaisesCartes'  => array(),
             'selectedCard'    => array(),
         );
         
@@ -562,6 +637,16 @@ class AppRestController extends Controller
         );
         $fileTurn    = $this->get('kernel')->getRootDir().'/../src/AppBundle/Resources/Json/turn.json';
         file_put_contents($fileTurn, json_encode($turn));
+    }
+
+    private function getJoueurById($id) {
+        $joueurs = $this->getPlayers();
+
+        foreach ($joueurs as $key => $value) {
+            if ($value == $id) {
+                return $key;
+            }
+        }
     }
 
     private function refactorPlayers($godId) {

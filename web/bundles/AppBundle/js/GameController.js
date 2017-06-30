@@ -2,13 +2,19 @@
  * Created by lehug on 16/05/17.
  */
 
-var url = "http://localhost:8888/eleusis/web/app_dev.php/";
+var url = "http://127.0.0.1:8000/app_dev.php/";
 var idJoueur = null;
 var numJoueur = null;
 var name = null;
 var gameAlreadyStart = false;
 
 $(document).ready(function() {
+    $('#card-ok').on('click', function () {
+        WS_godCheckCard(true);
+    });
+    $('#card-ko').on('click', function () {
+        WS_godCheckCard(false);
+    });
 
     $("#connect").on('click', function(){
 
@@ -91,16 +97,7 @@ function WS_refresh() {
                                     WS_godRules($('#rules-content').val());
                                 });
                             } else if (retour.godRole == 1) { // dieux dit si les cartes rentres ou non
-                                
-                                afficherPropositionjoueur(retour.partie.selectedCard);
                                 $('#check-card').modal();
-                                $('#card-ok').on('click', function () {
-                                    WS_godCheckCard(true);
-                                });
-                                $('#card-ko').on('click', function () {
-                                    WS_godCheckCard(false);
-                                });
-                                
                                 
                             } else if (retour.godRole == 1) { // dieux dit si prophete ou non
                                 
@@ -124,29 +121,43 @@ function WS_refresh() {
 
 function refreshBoard(retour) {
     // Affichage des cartes qui rentrent dans la règle
-    var winCard = retour.partie['bonnes-cartes'];
-    var winCardHTML = $('#true-card');
+    var winCardlot = retour.partie.bonnesCartes;
+    var winCardHTML = document.getElementById('true-card');
+    $('#true-card').empty();
 
-    for (i = 0, len = winCard.length; i < len; i++) {
-        var div = getHTMLcard(winCard[i]);
-        winCardHTML.appendChild(div);
+    for (j = 0, taille = winCardlot.length; j < taille; j++) {
+        for (i = 0, len = winCardlot[j].length; i < len; i++) {
+            div = getHTMLcard(winCardlot[j][i]);
+            winCardHTML.appendChild(div);
+        }
     }
 
     // Affichage des cartes qui ne sont pas rentré dans la regle
-    var loseCard = retour.partie['mauvaises-cartes'];
-    var loseCardHTML = $('#false-card');
+    var loseCardlot = retour.partie.mauvaisesCartes;
+    var loseCardHTML =document.getElementById('false-card');
+    $('#false-card').empty();
 
-    for (i = 0, len = loseCard.length; i < len; i++) {
-        div = getHTMLcard(loseCard[i]);
-        loseCardHTML.appendChild(div);
+    for (j = 0, taille = loseCardlot.length; j < taille; j++) {
+        for (i = 0, len = loseCardlot[j].length; i < len; i++) {
+            div = getHTMLcard(loseCardlot[j][i]);
+            loseCardHTML.appendChild(div);
+        }
+    }
+
+    // Affichage des cartes selectionné par un joueur
+    var selectedCards = document.getElementById('selected-card');
+    $('#selected-card').empty();
+    var cards = retour.partie.selectedCard;
+    for (i = 0, len = cards.length; i < len; i++) {
+        selectedCards.appendChild(getHTMLcard(cards[i]));
     }
 
     if (numJoueur != "god") {
         // Affichage de la main du joueur
         var num = numJoueur.substring(numJoueur.length-1, numJoueur.length);
         var deck = retour.partie['deckJ' + num];
-        var deckNode = document.getElementById('action-btn');
-        deckNode.childNodes = null;
+        var deckNode = document.getElementById('my-deck');
+        $('#my-deck').empty();
 
         for (i = 0, len = deck.length; i < len; i++) {
             div = getHTMLcard(deck[i]);
@@ -238,27 +249,18 @@ function getSelectedCard() {
     return selectedCards;
 }
 
-
 function WS_godCheckCard(reponse) {
     $.ajax({
         url: url + 'god-say-if-cards-match/' + reponse, // form action url
         type: 'get', // form submit method get/post
         dataType: 'json', // request type html/json/xml
         success: function(result) {
+            $('#check-card').modal('toggle');
+            $('#selected-card').empty();
         },
         error: function (error) {
             alert(error.statusText);
         }
 
     });
-}
-
-function afficherPropositionjoueur(cards) {
-    var selectedCards = document.getElementById('selected-card');
-    selectedCards.childNodes = null;
-
-    for (i = 0, len = cards.length; i < len; i++) {
-        var div = getHTMLcard(cards[i]);
-        selectedCards.appendChild(div);
-    }
 }
