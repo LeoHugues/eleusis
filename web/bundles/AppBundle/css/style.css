@@ -75,5 +75,5 @@ button.start-btn:focus {
 }
 
 .selected {
-    background: #9CB380;
+	filter:invert(100%);
 }

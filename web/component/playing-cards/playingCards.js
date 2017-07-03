@@ -1,18 +1,3 @@
-/*jslint jquery:true */
-/**
- * playingCards is a standard card deck library
- * This can be used to play standard card games (which will be additional rule modules attached to this set)
- *
- * usage: var cardDeck = new playingCards(conf);
- * override defaults for playingCards() and for card() with
- *    playingCards.defaults
- *    playingCards.card.defaults
- *
- * @author Copyright (c) 2010 Adam Eivy (antic | atomantic)
- * @license Dual licensed under the MIT and GPL licenses:
- *   http://www.opensource.org/licenses/mit-license.php
- *   http://www.gnu.org/licenses/gpl.html
- */
 
 if (Array.indexOf === undefined) {
     // doens't exist in oldIE
@@ -81,6 +66,7 @@ if (Array.indexOf === undefined) {
      * TODO: put this in a UI extension pack along with all the other demo methods
      */
     playingCards.prototype.spread = function(dest) {
+
         if (!this.conf.el && !dest) {
             return false;
         }
@@ -113,10 +99,10 @@ if (Array.indexOf === undefined) {
             "8": "Eight",
             "9": "Nine",
             "10": "Ten",
-            "J": "Jack",
-            "Q": "Queen",
-            "K": "King",
-            "A": "Ace"
+            "11": "Jack",
+            "12": "Queen",
+            "13": "King",
+            "1": "Ace"
         },
         "suits": {
             "S": "Spades",

@@ -5,14 +5,19 @@
         <title>{% block title %}Welcome!{% endblock %}</title>
         <link rel="stylesheet" href="{{ asset('component/css/bootstrap.min.css') }}" />
         <link rel="stylesheet" href="{{ asset('bundles/AppBundle/css/style.css') }}" />
+		<link rel="stylesheet" href="{{ asset('component/playing-cards/playingCards.ui.css') }}" />
+		
         {% block stylesheets %}
         {% endblock %}
         <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
     </head>
     <body>
         {% block body %}{% endblock %}
-        <script src="{{ asset('component/js/jquery.min.js') }}"></script>
+		<!-- rzr -->
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
         <script src="{{ asset('component/js/bootstrap.min.js') }}"></script>
+		<script src="{{ asset('component/playing-cards/playingCards.js') }}"></script>
+		<script src="{{ asset('component/playing-cards/playingCards.ui.js') }}"></script>
         {% block javascripts %}
         {% endblock %}
     </body>

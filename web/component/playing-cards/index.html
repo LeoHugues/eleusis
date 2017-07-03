@@ -48,10 +48,54 @@
         /*
          * example throwing cards on the table
          */
-        $(document).ready(function(){
+         function randomCard()
+         {
+             var firstrandom = Math.floor(Math.random() * 13) + 1 ;
+             return firstrandom;
+         }
+         function randomCardColor()
+         {
+             var firstrandomColor = Math.floor(Math.random() * 4) + 1 ; 
+            switch (firstrandomColor)
+            {
+                case 1: firstrandomColor = "S";break;
+                case 2: firstrandomColor = "D";break;
+                case 3: firstrandomColor = "C";break;
+                case 4: firstrandomColor = "H";break;
+            }
+            return firstrandomColor;
+         }
+         function cardChecker(cards)
+         {
+            for(var i =0;i<5;i++){
+                for(var j =0;i<5;i++)
+                {
+                    if(cards[i] == cards[j] && i!=j)
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
+         }
+         function cardGenerator(cards)
+         {
+            var i;
 
-            var cardDeck = $("#cardDeck").playingCards(["3-H","3-S","K-D"]);
-            cardDeck.spread(); // show it
+            for(i=0;i<(Math.floor(Math.random() * 6) + 1);i++)
+            {
+                cards[i]=(randomCard()+"-"+randomCardColor());
+            }
+            if(!cardChecker(cards))
+                cardGenerator(cards);
+            return cards;
+         }
+        $(document).ready(function(){
+            var cards=["","","","",""];
+            cards = cardGenerator(cards);
+
+            var cardDeck = $("#cardDeck").playingCards(['13-C','13-H','1-S']);
+            cardDeck.spread(); // show it            
 
         });
         /*

@@ -154,17 +154,15 @@ function refreshBoard(retour) {
 
     if (numJoueur != "god") {
         // Affichage de la main du joueur
+		
         var num = numJoueur.substring(numJoueur.length-1, numJoueur.length);
         var deck = retour.partie['deckJ' + num];
         var deckNode = document.getElementById('my-deck');
         $('#my-deck').empty();
+		showHand(deck);
 
-        for (i = 0, len = deck.length; i < len; i++) {
-            div = getHTMLcard(deck[i]);
-            deckNode.appendChild(div);
-        }
 
-        $(".card").on('click', function () {
+        $(".playingCard").on('click', function () {
             if ($(this).hasClass('selected')) {
                 $(this).removeClass('selected');
             } else {
@@ -173,7 +171,26 @@ function refreshBoard(retour) {
         });
     }
 }
-
+function showHand(card)
+{
+	var tabCard = [];
+	var couleurCard = '';
+	var valueCard = '';
+	for(i=0; i < card.length;i++){
+		switch (card[i].color)
+		{
+			case 'trefle': couleurCard = "C";break;
+			case 'carreau': couleurCard = "D";break;
+			case 'pique': couleurCard = "S";break;
+			case 'coeur': couleurCard = "H";break;
+		}
+		valueCard = card[i].number;
+		
+		tabCard[i] = valueCard.concat('-',couleurCard);
+	}
+	var cardDeck = $("#cardDeck").playingCards(tabCard);
+    cardDeck.spread(); // show it       
+}
 function getHTMLcard(card) {
     var labelValue = document.createElement("label");
     labelValue.innerText = card.number;
